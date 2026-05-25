@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex — DBA Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0b0f; --bg2: #111318; --bg3: #1a1d24; --bg4: #22262f;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --accent: #4f8ef7; --accent2: #7eb3ff; --accent-glow: rgba(79,142,247,0.15);
+    --text: #e8eaf0; --text2: #9499a8; --text3: #5c6070;
+    --success: #3dd68c; --warning: #f59e0b; --danger: #f87171;
+    --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 60px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 32px; height: 32px; background: linear-gradient(135deg, #4f8ef7, #7c3aed); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: white; flex-shrink: 0; }
+  .header-title { font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+  .header-subtitle { font-size: 12px; color: var(--text3); font-weight: 400; }
+  .status-badge { display: flex; align-items: center; gap: 6px; background: rgba(61,214,140,0.08); border: 1px solid rgba(61,214,140,0.2); border-radius: 20px; padding: 4px 10px; font-size: 12px; color: var(--success); font-weight: 500; }
+  .status-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .db-indicators { display: flex; align-items: center; gap: 8px; }
+  .db-badge { display: flex; align-items: center; gap: 5px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; font-size: 11px; color: var(--text2); font-family: var(--mono); }
+  .db-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .db-dot.mysql { background: #f59e0b; }
+  .db-dot.pg { background: #4f8ef7; }
+  .main { display: flex; flex: 1; overflow: hidden; }
+  .sidebar { width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 12px; gap: 4px; flex-shrink: 0; }
+  .sidebar-section { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 8px 4px; margin-top: 8px; }
+  .sidebar-section:first-child { margin-top: 0; }
+  .sidebar-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text2); transition: all 0.15s; border: 1px solid transparent; background: none; width: 100%; text-align: left; font-family: var(--font); }
+  .sidebar-item:hover { background: var(--bg3); color: var(--text); }
+  .sidebar-item.active { background: var(--accent-glow); border-color: rgba(79,142,247,0.2); color: var(--accent2); }
+  .sidebar-icon { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+  .sidebar-item.active .sidebar-icon { opacity: 1; }
+  .quick-action { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 12px; color: var(--text2); transition: all 0.15s; text-align: left; font-family: var(--font); width: 100%; line-height: 1.4; }
+  .quick-action:hover { background: var(--bg4); border-color: var(--border2); color: var(--text); }
+  .quick-action-label { font-size: 10px; color: var(--text3); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+  .messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+  .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 16px; padding: 40px; text-align: center; }
+  .welcome-logo { width: 56px; height: 56px; background: linear-gradient(135deg, #4f8ef7, #7c3aed); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 600; color: white; margin-bottom: 8px; }
+  .welcome h2 { font-size: 22px; font-weight: 500; color: var(--text); letter-spacing: -0.02em; }
+  .welcome p { font-size: 14px; color: var(--text2); max-width: 360px; line-height: 1.6; }
+  .welcome-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; margin-top: 8px; }
+  .welcome-action { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; text-align: left; transition: all 0.15s; font-family: var(--font); }
+  .welcome-action:hover { background: var(--bg3); border-color: var(--border2); transform: translateY(-1px); }
+  .welcome-action-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .welcome-action-desc { font-size: 12px; color: var(--text3); line-height: 1.4; }
+  .message { display: flex; gap: 12px; animation: fadeIn 0.2s ease; max-width: 780px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .message.user { flex-direction: row-reverse; align-self: flex-end; }
+  .avatar { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; margin-top: 2px; }
+  .avatar.alex { background: linear-gradient(135deg, #4f8ef7, #7c3aed); color: white; }
+  .avatar.user { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); }
+  .bubble { max-width: 600px; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.65; color: var(--text); }
+  .message.assistant .bubble { background: var(--bg2); border: 1px solid var(--border); border-top-left-radius: 4px; }
+  .message.user .bubble { background: var(--accent-glow); border: 1px solid rgba(79,142,247,0.2); color: var(--text); border-top-right-radius: 4px; }
+  .bubble pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-family: var(--mono); font-size: 12px; overflow-x: auto; margin: 8px 0; white-space: pre-wrap; word-break: break-word; }
+  .bubble code { font-family: var(--mono); font-size: 12px; background: var(--bg3); padding: 1px 5px; border-radius: 3px; color: var(--accent2); }
+  .msg-meta { font-size: 11px; color: var(--text3); margin-top: 4px; padding: 0 4px; }
+  .message.user .msg-meta { text-align: right; }
+  .typing { display: flex; align-items: center; gap: 4px; padding: 14px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; border-top-left-radius: 4px; width: fit-content; }
+  .typing span { width: 6px; height: 6px; background: var(--text3); border-radius: 50%; animation: typing 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+  .input-area { padding: 16px 24px 20px; border-top: 1px solid var(--border); background: var(--bg2); }
+  .input-wrapper { display: flex; align-items: flex-end; gap: 10px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px; padding: 10px 14px; transition: border-color 0.15s; }
+  .input-wrapper:focus-within { border-color: rgba(79,142,247,0.4); box-shadow: 0 0 0 3px rgba(79,142,247,0.06); }
+  #userInput { flex: 1; background: none; border: none; outline: none; font-family: var(--font); font-size: 14px; color: var(--text); resize: none; min-height: 22px; max-height: 120px; line-height: 1.5; overflow-y: auto; }
+  #userInput::placeholder { color: var(--text3); }
+  .send-btn { width: 34px; height: 34px; background: var(--accent); border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; color: white; }
+  .send-btn:hover { background: var(--accent2); transform: scale(1.05); }
+  .send-btn:active { transform: scale(0.96); }
+  .send-btn:disabled { background: var(--bg4); cursor: not-allowed; transform: none; }
+  .input-hint { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: center; }
+  .session-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .session-id { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .clear-btn { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; font-family: var(--font); padding: 2px 6px; border-radius: 4px; transition: all 0.15s; }
+  .clear-btn:hover { color: var(--danger); background: rgba(248,113,113,0.08); }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <div class="logo">A</div>
+    <div>
+      <div class="header-title">Alex — DBA Assistant</div>
+      <div class="header-subtitle">Powered by AWS Bedrock Multi-Agent</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="db-indicators">
+      <div class="db-badge"><div class="db-dot mysql"></div>MySQL</div>
+      <div class="db-badge"><div class="db-dot pg"></div>PostgreSQL</div>
+    </div>
+    <div class="status-badge"><div class="status-dot"></div>Online</div>
+  </div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <button class="sidebar-item active" onclick="setActive(this)">
+      <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+      Chat
+    </button>
+    <button class="sidebar-item" onclick="setActive(this)">
+      <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 5h6M5 11h3"/></svg>
+      Sessions
+    </button>
+    <div class="sidebar-section">Quick Actions</div>
+    <button class="quick-action" onclick="sendQuick('Show me all available databases')">
+      <div class="quick-action-label">List</div>Show databases
+    </button>
+    <button class="quick-action" onclick="sendQuick('Show me any blocking sessions in MySQL')">
+      <div class="quick-action-label">MySQL</div>Blocking sessions
+    </button>
+    <button class="quick-action" onclick="sendQuick('Show me any blocking sessions in PostgreSQL')">
+      <div class="quick-action-label">PostgreSQL</div>Blocking sessions
+    </button>
+    <button class="quick-action" onclick="sendQuick('I want to create a new database user')">
+      <div class="quick-action-label">User</div>Clone a user
+    </button>
+    <div class="sidebar-section">System</div>
+    <button class="sidebar-item" onclick="clearChat()">
+      <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10l-1 9H4L3 4zM6 4V3h4v1M2 4h12"/></svg>
+      Clear chat
+    </button>
+  </div>
+  <div class="chat-container">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="welcome-logo">A</div>
+        <h2>Hello, I'm Alex</h2>
+        <p>Your AI-powered database administration assistant. I can help you manage MySQL and PostgreSQL databases directly — no DBA ticket needed.</p>
+        <div class="welcome-actions">
+          <button class="welcome-action" onclick="sendQuick('Show me all available databases')">
+            <div class="welcome-action-title">List databases</div>
+            <div class="welcome-action-desc">See all available MySQL & PostgreSQL instances</div>
+          </button>
+          <button class="welcome-action" onclick="sendQuick('Are there any blocking sessions right now?')">
+            <div class="welcome-action-title">Check blocking sessions</div>
+            <div class="welcome-action-desc">Find and resolve long-running queries</div>
+          </button>
+          <button class="welcome-action" onclick="sendQuick('I need to create a new database user')">
+            <div class="welcome-action-title">Create a user</div>
+            <div class="welcome-action-desc">Clone privileges from an existing reference user</div>
+          </button>
+          <button class="welcome-action" onclick="sendQuick('What can you help me with?')">
+            <div class="welcome-action-title">See capabilities</div>
+            <div class="welcome-action-desc">Learn everything Alex can do for you</div>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="session-info">
+        <span class="session-id" id="sessionIdDisplay"></span>
+        <button class="clear-btn" onclick="clearChat()">New session</button>
+      </div>
+      <div class="input-wrapper">
+        <textarea id="userInput" placeholder="Ask Alex anything about your databases..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8L14 2L8 14L7 9L2 8Z" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">Alex has access to MySQL and PostgreSQL · Powered by AWS Bedrock</div>
+    </div>
+  </div>
+</div>
+<script>
+const LAMBDA_URL = 'https://56mzoau5mpb33goahlfb5apoda0ljyzk.lambda-url.us-east-1.on.aws/';
+let sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+let isLoading = false;
+document.getElementById('sessionIdDisplay').textContent = 'Session: ' + sessionId;
+function setActive(el) { document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function formatTime() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+function formatText(text) {
+  text = text.replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
+function addMessage(role, text) {
+  hideWelcome();
+  const messages = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.className = `message ${role}`;
+  const isAssistant = role === 'assistant';
+  msg.innerHTML = `
+    <div class="avatar ${isAssistant ? 'alex' : 'user'}">${isAssistant ? 'A' : 'U'}</div>
+    <div>
+      <div class="bubble">${isAssistant ? formatText(text) : text}</div>
+      <div class="msg-meta">${isAssistant ? 'Alex · ' : ''}${formatTime()}</div>
+    </div>`;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+function addTyping() {
+  hideWelcome();
+  const messages = document.getElementById('messages');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message assistant';
+  wrapper.id = 'typing-indicator';
+  wrapper.innerHTML = `<div class="avatar alex">A</div><div class="typing"><span></span><span></span><span></span></div>`;
+  messages.appendChild(wrapper);
+  messages.scrollTop = messages.scrollHeight;
+}
+function removeTyping() { const t = document.getElementById('typing-indicator'); if (t) t.remove(); }
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', text);
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  addTyping();
+  try {
+    const res = await fetch(LAMBDA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, session_id: sessionId })
+    });
+    const data = await res.json();
+    removeTyping();
+    if (data.response) { addMessage('assistant', data.response); }
+    else if (data.error) { addMessage('assistant', '⚠ ' + data.error); }
+  } catch (err) {
+    removeTyping();
+    addMessage('assistant', '⚠ Connection error. Please check the Lambda URL and try again.');
+    console.error(err);
+  }
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('userInput').focus();
+}
+function sendQuick(text) { document.getElementById('userInput').value = text; sendMessage(); }
+function clearChat() {
+  sessionId = 'session-' + Math.random().toString(36).substr(2, 9);
+  document.getElementById('sessionIdDisplay').textContent = 'Session: ' + sessionId;
+  document.getElementById('messages').innerHTML = `
+    <div class="welcome" id="welcome">
+      <div class="welcome-logo">A</div>
+      <h2>Hello, I'm Alex</h2>
+      <p>Your AI-powered database administration assistant. I can help you manage MySQL and PostgreSQL databases directly — no DBA ticket needed.</p>
+      <div class="welcome-actions">
+        <button class="welcome-action" onclick="sendQuick('Show me all available databases')"><div class="welcome-action-title">List databases</div><div class="welcome-action-desc">See all available MySQL & PostgreSQL instances</div></button>
+        <button class="welcome-action" onclick="sendQuick('Are there any blocking sessions right now?')"><div class="welcome-action-title">Check blocking sessions</div><div class="welcome-action-desc">Find and resolve long-running queries</div></button>
+        <button class="welcome-action" onclick="sendQuick('I need to create a new database user')"><div class="welcome-action-title">Create a user</div><div class="welcome-action-desc">Clone privileges from an existing reference user</div></button>
+        <button class="welcome-action" onclick="sendQuick('What can you help me with?')"><div class="welcome-action-title">See capabilities</div><div class="welcome-action-desc">Learn everything Alex can do for you</div></button>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

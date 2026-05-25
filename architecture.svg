@@ -1,0 +1,151 @@
+<svg viewBox="0 0 820 700" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+
+  <!-- Background -->
+  <rect width="820" height="700" fill="#060910"/>
+
+  <!-- Title -->
+  <text x="410" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#e2e8f0" letter-spacing="-0.3">AWS Bedrock DBA Agent — Architecture</text>
+  <text x="410" y="54" text-anchor="middle" font-size="10" fill="#4b5563" letter-spacing="1.5">MULTI-AGENT · MYSQL + POSTGRESQL · us-east-1</text>
+
+  <!-- ── LAYER 1: UI ── -->
+  <rect x="40" y="72" width="740" height="60" rx="10" fill="rgba(99,102,241,0.08)" stroke="rgba(99,102,241,0.35)" stroke-width="1"/>
+  <text x="60" y="90" font-size="9" font-weight="700" fill="#818cf8" letter-spacing="1.5">01 · USER INTERFACE</text>
+  <rect x="200" y="84" width="420" height="36" rx="7" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+  <text x="410" y="100" text-anchor="middle" font-size="12" font-weight="600" fill="#e2e8f0">Alex — DBA Assistant</text>
+  <text x="410" y="114" text-anchor="middle" font-size="10" fill="#6b7280">Single HTML file · Dark theme · Session tracking · Quick actions</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="410" y1="133" x2="410" y2="150" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="406,150 414,150 410,156" fill="#2dd4bf"/>
+  <text x="430" y="145" font-size="9" fill="#1f2937" letter-spacing="0.5">HTTPS · Function URL</text>
+
+  <!-- ── LAYER 2: FRONT-DOOR LAMBDA ── -->
+  <rect x="40" y="158" width="740" height="60" rx="10" fill="rgba(20,184,166,0.08)" stroke="rgba(20,184,166,0.3)" stroke-width="1"/>
+  <text x="60" y="176" font-size="9" font-weight="700" fill="#2dd4bf" letter-spacing="1.5">02 · FRONT-DOOR LAMBDA</text>
+  <rect x="200" y="170" width="420" height="36" rx="7" fill="rgba(20,184,166,0.1)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+  <text x="410" y="186" text-anchor="middle" font-size="12" font-weight="600" fill="#e2e8f0">dba-agent-frontdoor</text>
+  <text x="410" y="200" text-anchor="middle" font-size="10" fill="#6b7280">Python 3.12 · Public Function URL · CORS · 5 min timeout · 256 MB</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="410" y1="219" x2="410" y2="236" stroke="#c084fc" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="406,236 414,236 410,242" fill="#c084fc"/>
+  <text x="430" y="231" font-size="9" fill="#1f2937" letter-spacing="0.5">bedrock:InvokeAgent</text>
+
+  <!-- ── LAYER 3: AGENTIC ── -->
+  <rect x="40" y="244" width="740" height="96" rx="10" fill="rgba(168,85,247,0.08)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+  <text x="60" y="262" font-size="9" font-weight="700" fill="#c084fc" letter-spacing="1.5">03 · AGENTIC LAYER — AWS BEDROCK</text>
+
+  <!-- Supervisor -->
+  <rect x="60" y="268" width="200" height="60" rx="7" fill="rgba(168,85,247,0.12)" stroke="rgba(168,85,247,0.4)" stroke-width="1.5"/>
+  <text x="160" y="286" text-anchor="middle" font-size="12" font-weight="600" fill="#e2e8f0">Supervisor — Alex</text>
+  <text x="160" y="300" text-anchor="middle" font-size="10" fill="#9ca3af">Amazon Nova Pro</text>
+  <text x="160" y="314" text-anchor="middle" font-size="10" fill="#9ca3af">Supervisor mode · 2 collaborators</text>
+
+  <!-- Arrow supervisor → specialists -->
+  <line x1="261" y1="298" x2="295" y2="284" stroke="rgba(168,85,247,0.5)" stroke-width="1"/>
+  <line x1="261" y1="298" x2="295" y2="314" stroke="rgba(168,85,247,0.5)" stroke-width="1"/>
+  <text x="268" y="295" font-size="8" fill="#374151">routes</text>
+
+  <!-- MySQL Specialist -->
+  <rect x="296" y="268" width="224" height="28" rx="6" fill="rgba(168,85,247,0.1)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+  <text x="408" y="280" text-anchor="middle" font-size="11" font-weight="600" fill="#e2e8f0">MySQL Specialist</text>
+  <text x="408" y="291" text-anchor="middle" font-size="9" fill="#9ca3af">Nova Pro · mysql_read_actions · mysql_write_actions</text>
+
+  <!-- PG Specialist -->
+  <rect x="296" y="302" width="224" height="28" rx="6" fill="rgba(168,85,247,0.1)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+  <text x="408" y="314" text-anchor="middle" font-size="11" font-weight="600" fill="#e2e8f0">PostgreSQL Specialist</text>
+  <text x="408" y="325" text-anchor="middle" font-size="9" fill="#9ca3af">Nova Pro · postgres_read_actions · postgres_write_actions</text>
+
+  <!-- VPC boundary starts -->
+  <rect x="40" y="356" width="740" height="304" rx="10" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="5 3"/>
+  <rect x="40" y="348" width="160" height="16" rx="3" fill="#060910"/>
+  <text x="120" y="359" text-anchor="middle" font-size="9" fill="#374151" letter-spacing="1">AWS VPC — Private Subnets</text>
+
+  <!-- Arrows layer 3→4 -->
+  <line x1="350" y1="330" x2="280" y2="392" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="277,390 285,393 280,398" fill="#2dd4bf"/>
+  <line x1="460" y1="330" x2="540" y2="392" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="537,390 545,393 540,398" fill="#2dd4bf"/>
+  <text x="370" y="368" font-size="9" fill="#1f2937">invoke Lambda</text>
+
+  <!-- ── LAYER 4: BACKEND LAMBDAS ── -->
+  <rect x="56" y="372" width="330" height="86" rx="8" fill="rgba(20,184,166,0.07)" stroke="rgba(20,184,166,0.22)" stroke-width="1"/>
+  <text x="76" y="388" font-size="9" font-weight="700" fill="#2dd4bf" letter-spacing="1.2">04 · BACKEND LAMBDA</text>
+
+  <rect x="72" y="394" width="130" height="52" rx="6" fill="rgba(20,184,166,0.1)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+  <text x="137" y="412" text-anchor="middle" font-size="11" font-weight="600" fill="#e2e8f0">MySQL Lambda</text>
+  <text x="137" y="425" text-anchor="middle" font-size="9" fill="#6b7280">Python 3.14</text>
+  <text x="137" y="438" text-anchor="middle" font-size="9" fill="#6b7280">pymysql layer</text>
+
+  <rect x="216" y="394" width="154" height="52" rx="6" fill="rgba(20,184,166,0.1)" stroke="rgba(20,184,166,0.25)" stroke-width="1"/>
+  <text x="293" y="412" text-anchor="middle" font-size="11" font-weight="600" fill="#e2e8f0">PostgreSQL Lambda</text>
+  <text x="293" y="425" text-anchor="middle" font-size="9" fill="#6b7280">Python 3.12</text>
+  <text x="293" y="438" text-anchor="middle" font-size="9" fill="#6b7280">psycopg2 layer</text>
+
+  <!-- Secrets Manager -->
+  <rect x="434" y="372" width="326" height="86" rx="8" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+  <text x="454" y="388" font-size="9" font-weight="700" fill="#fcd34d" letter-spacing="1.2">SECRETS MANAGER</text>
+  <text x="454" y="406" font-size="10" fill="#9ca3af">dba-agent/mysql/reader</text>
+  <text x="454" y="420" font-size="10" fill="#9ca3af">dba-agent/mysql/admin</text>
+  <text x="454" y="434" font-size="10" fill="#9ca3af">dba-agent/postgres/reader</text>
+  <text x="454" y="448" font-size="10" fill="#9ca3af">dba-agent/postgres/admin</text>
+  <text x="720" y="420" text-anchor="end" font-size="9" fill="#374151">via VPC</text>
+  <text x="720" y="432" text-anchor="end" font-size="9" fill="#374151">Endpoint</text>
+
+  <!-- Dashed line Lambda → Secrets -->
+  <line x1="387" y1="420" x2="433" y2="420" stroke="rgba(245,158,11,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="410" y="414" text-anchor="middle" font-size="8" fill="#374151">fetch creds</text>
+
+  <!-- Arrows layer 4→5 -->
+  <line x1="137" y1="446" x2="137" y2="490" stroke="#fb923c" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="133,490 141,490 137,496" fill="#fb923c"/>
+  <line x1="293" y1="446" x2="540" y2="490" stroke="#fb923c" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="537,490 545,493 540,498" fill="#fb923c"/>
+  <text x="240" y="476" font-size="9" fill="#1f2937">connection pool · TLS</text>
+
+  <!-- ── LAYER 5: RDS PROXY ── -->
+  <rect x="56" y="500" width="330" height="60" rx="8" fill="rgba(251,146,60,0.07)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+  <text x="76" y="516" font-size="9" font-weight="700" fill="#fb923c" letter-spacing="1.2">05 · RDS PROXY</text>
+
+  <rect x="72" y="522" width="130" height="28" rx="6" fill="rgba(251,146,60,0.1)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+  <text x="137" y="535" text-anchor="middle" font-size="10" font-weight="600" fill="#e2e8f0">MySQL Proxy</text>
+  <text x="137" y="546" text-anchor="middle" font-size="9" fill="#6b7280">port 3306 · TLS</text>
+
+  <rect x="216" y="522" width="154" height="28" rx="6" fill="rgba(251,146,60,0.1)" stroke="rgba(251,146,60,0.25)" stroke-width="1"/>
+  <text x="293" y="535" text-anchor="middle" font-size="10" font-weight="600" fill="#e2e8f0">PostgreSQL Proxy</text>
+  <text x="293" y="546" text-anchor="middle" font-size="9" fill="#6b7280">port 5432</text>
+
+  <!-- Arrows layer 5→6 -->
+  <line x1="137" y1="560" x2="137" y2="590" stroke="#4ade80" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="133,590 141,590 137,596" fill="#4ade80"/>
+  <line x1="293" y1="560" x2="540" y2="590" stroke="#4ade80" stroke-width="1" stroke-dasharray="3 2"/>
+  <polygon points="537,590 545,593 540,598" fill="#4ade80"/>
+  <text x="240" y="580" font-size="9" fill="#1f2937">SQL queries</text>
+
+  <!-- ── LAYER 6: RDS DATABASES ── -->
+  <rect x="56" y="598" width="330" height="50" rx="8" fill="rgba(34,197,94,0.07)" stroke="rgba(34,197,94,0.25)" stroke-width="1"/>
+  <text x="76" y="614" font-size="9" font-weight="700" fill="#4ade80" letter-spacing="1.2">06 · RDS DATABASES — PRIVATE SUBNET · NO INTERNET ROUTE</text>
+
+  <rect x="72" y="620" width="130" height="20" rx="5" fill="rgba(34,197,94,0.1)" stroke="rgba(34,197,94,0.25)" stroke-width="1"/>
+  <text x="137" y="634" text-anchor="middle" font-size="10" font-weight="600" fill="#e2e8f0">RDS MySQL · t4g.micro</text>
+
+  <rect x="216" y="620" width="154" height="20" rx="5" fill="rgba(34,197,94,0.1)" stroke="rgba(34,197,94,0.25)" stroke-width="1"/>
+  <text x="293" y="634" text-anchor="middle" font-size="10" font-weight="600" fill="#e2e8f0">RDS PostgreSQL · t4g.micro</text>
+
+  <!-- Legend -->
+  <rect x="434" y="500" width="326" height="148" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="454" y="518" font-size="9" font-weight="700" fill="#6b7280" letter-spacing="1.2">LEGEND</text>
+  <circle cx="466" cy="534" r="5" fill="rgba(99,102,241,0.6)"/>
+  <text x="478" y="538" font-size="10" fill="#94a3b8">UI Layer</text>
+  <circle cx="466" cy="554" r="5" fill="rgba(20,184,166,0.6)"/>
+  <text x="478" y="558" font-size="10" fill="#94a3b8">Lambda Functions</text>
+  <circle cx="466" cy="574" r="5" fill="rgba(168,85,247,0.6)"/>
+  <text x="478" y="578" font-size="10" fill="#94a3b8">Bedrock Agents</text>
+  <circle cx="466" cy="594" r="5" fill="rgba(251,146,60,0.6)"/>
+  <text x="478" y="598" font-size="10" fill="#94a3b8">RDS Proxy</text>
+  <circle cx="466" cy="614" r="5" fill="rgba(34,197,94,0.6)"/>
+  <text x="478" y="618" font-size="10" fill="#94a3b8">RDS Databases</text>
+  <circle cx="466" cy="634" r="5" fill="rgba(245,158,11,0.6)"/>
+  <text x="478" y="638" font-size="10" fill="#94a3b8">Secrets Manager</text>
+
+</svg>
