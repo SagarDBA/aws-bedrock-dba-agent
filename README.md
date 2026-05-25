@@ -20,6 +20,9 @@ A supervisor AI agent (named Alex) routes user requests to the appropriate speci
 
 ## Architecture
 
+![Architecture](architecture.svg)
+
+
 Six layers, top to bottom:
 
 ```
